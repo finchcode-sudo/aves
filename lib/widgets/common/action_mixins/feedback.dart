@@ -141,8 +141,22 @@ mixin FeedbackMixin {
     int? itemCount,
     VoidCallback? onCancel,
     Future<void> Function(Set<T> processed)? onDone,
+    bool silent = false,
   }) async {
     final opCompleter = Completer();
+    if (silent) {
+      // run the operation without any progress overlay
+      final processed = <T>{};
+      opStream.listen(
+        processed.add,
+        onError: (error) => debugPrint('showOpReport (silent) error=$error'),
+        onDone: () async {
+          await onDone?.call(processed);
+          opCompleter.complete();
+        },
+      );
+      return opCompleter.future;
+    }
     await showAvesDialog<void>(
       context: context,
       barrierDismissible: false,

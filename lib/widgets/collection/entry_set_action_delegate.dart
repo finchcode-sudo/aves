@@ -47,6 +47,7 @@ import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/dialogs/add_shortcut_dialog.dart';
 import 'package:aves/widgets/dialogs/aves_confirmation_dialog.dart';
 import 'package:aves/widgets/dialogs/aves_dialog.dart';
+import 'package:aves/widgets/dialogs/delete_choice_dialog.dart';
 import 'package:aves/widgets/dialogs/convert_entry_dialog.dart';
 import 'package:aves/widgets/dialogs/entry_editors/rename_entry_set_page.dart';
 import 'package:aves/widgets/dialogs/filter_editors/create_dynamic_album_dialog.dart';
@@ -317,17 +318,25 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
 
   Future<void> _delete(BuildContext context) async {
     final entries = _getTargetItems(context);
-    final byBinUsage = groupBy<AvesEntry, bool>(entries, (entry) {
-      final details = vaults.getVault(entry.directory);
-      return details?.useBin ?? settings.enableBin;
-    });
-    await Future.forEach(byBinUsage.entries, (kv) async {
-      await doDelete(
+    final pureTrash = entries.every((entry) => entry.trashed);
+
+    var useBin = false;
+    if (!pureTrash) {
+      final choice = await showAvesDialog<DeleteChoice>(
         context: context,
-        entries: kv.value.toSet(),
-        enableBin: kv.key,
+        builder: (context) => const DeleteChoiceDialog(),
+        routeSettings: const RouteSettings(name: DeleteChoiceDialog.routeName),
       );
-    });
+      if (choice == null) return;
+      useBin = choice == DeleteChoice.moveToBin;
+    }
+
+    await doDelete(
+      context: context,
+      entries: entries,
+      enableBin: useBin,
+      confirmed: !pureTrash,
+    );
   }
 
   // returns whether it completed the action (with or without failures)
@@ -335,10 +344,11 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
     required BuildContext context,
     required Set<AvesEntry> entries,
     required bool enableBin,
+    bool confirmed = false,
   }) async {
     final pureTrash = entries.every((entry) => entry.trashed);
     if (enableBin && !pureTrash) {
-      return await doMove(context, moveType: MoveType.toBin, entries: entries);
+      return await doMove(context, moveType: MoveType.toBin, entries: entries, confirmed: true);
     }
 
     final l10n = context.l10n;
@@ -346,12 +356,13 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
     final storageDirs = entries.map((entry) => entry.storageDirectory).nonNulls.toSet();
     final todoCount = entries.length;
 
-    if (!await showSkippableConfirmationDialog(
-      context: context,
-      type: ConfirmationDialog.deleteForever,
-      message: l10n.deleteEntriesConfirmationDialogMessage(todoCount),
-      confirmationButtonLabel: l10n.deleteButtonLabel,
-    )) {
+    if (!confirmed &&
+        !await showSkippableConfirmationDialog(
+          context: context,
+          type: ConfirmationDialog.deleteForever,
+          message: l10n.deleteEntriesConfirmationDialogMessage(todoCount),
+          confirmationButtonLabel: l10n.deleteButtonLabel,
+        )) {
       return false;
     }
 
@@ -363,6 +374,7 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
       context: context,
       opStream: mediaEditService.delete(opId: opId, entries: entries),
       itemCount: todoCount,
+      silent: true,
       onCancel: () => mediaEditService.cancelFileOp(opId),
       onDone: (processed) async {
         final successOps = processed.where((op) => op.success).toSet();

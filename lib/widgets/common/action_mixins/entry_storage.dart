@@ -384,9 +384,10 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin, 
     required MoveType moveType,
     required Set<AvesEntry> entries,
     bool hideShowAction = false,
+    bool confirmed = false,
     VoidCallback? onSuccess,
   }) async {
-    if (moveType == MoveType.toBin) {
+    if (moveType == MoveType.toBin && !confirmed) {
       final l10n = context.l10n;
       if (!await showSkippableConfirmationDialog(
         context: context,

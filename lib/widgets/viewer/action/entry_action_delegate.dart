@@ -28,6 +28,7 @@ import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/dialogs/add_shortcut_dialog.dart';
 import 'package:aves/widgets/dialogs/aves_confirmation_dialog.dart';
 import 'package:aves/widgets/dialogs/aves_dialog.dart';
+import 'package:aves/widgets/dialogs/delete_choice_dialog.dart';
 import 'package:aves/widgets/dialogs/convert_entry_dialog.dart';
 import 'package:aves/widgets/dialogs/entry_editors/rename_entry_dialog.dart';
 import 'package:aves/widgets/settings/settings_page.dart';
@@ -421,16 +422,20 @@ class EntryActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAwareMix
   }
 
   Future<void> _delete(BuildContext context, AvesEntry targetEntry) async {
-    final vault = vaults.getVault(targetEntry.directory);
-    final enableBin = vault?.useBin ?? settings.enableBin;
-
-    if (enableBin && !targetEntry.trashed) {
-      await _move(context, targetEntry, moveType: MoveType.toBin);
-      return;
-    }
-
     final l10n = context.l10n;
-    if (!await showSkippableConfirmationDialog(
+
+    if (!targetEntry.trashed) {
+      final choice = await showAvesDialog<DeleteChoice>(
+        context: context,
+        builder: (context) => const DeleteChoiceDialog(),
+        routeSettings: const RouteSettings(name: DeleteChoiceDialog.routeName),
+      );
+      if (choice == null) return;
+      if (choice == DeleteChoice.moveToBin) {
+        await doMove(context, moveType: MoveType.toBin, entries: {targetEntry}, confirmed: true);
+        return;
+      }
+    } else if (!await showSkippableConfirmationDialog(
       context: context,
       type: ConfirmationDialog.deleteForever,
       message: l10n.deleteEntriesConfirmationDialogMessage(1),
