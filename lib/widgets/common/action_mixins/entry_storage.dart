@@ -275,7 +275,7 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin, 
       }
     }
 
-    if ({MoveType.move, MoveType.copy, MoveType.toBin}.contains(moveType) && !await checkUndatedItems(context, entries)) return false;
+    if ({MoveType.move, MoveType.copy}.contains(moveType) && !await checkUndatedItems(context, entries)) return false;
 
     // local context may be deactivated when action is triggered (because of navigation or app bar change)
     // so we get the navigator beforehand and rely on its context when appropriate
