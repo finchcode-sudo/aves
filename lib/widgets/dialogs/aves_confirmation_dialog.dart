@@ -1,5 +1,4 @@
 import 'package:aves/model/settings/settings.dart';
-import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves_model/aves_model.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -64,17 +63,6 @@ bool _shouldConfirm(ConfirmationDialog type) {
   }
 }
 
-void _skipConfirmation(ConfirmationDialog type) {
-  switch (type) {
-    case .createVault:
-      settings.confirmCreateVault = false;
-    case .deleteForever:
-      settings.confirmDeleteForever = false;
-    case .moveToBin:
-      settings.confirmMoveToBin = false;
-  }
-}
-
 abstract class ConfirmationDialogDelegate {
   List<Widget> build(BuildContext context);
 
@@ -113,35 +101,16 @@ class _SkippableConfirmationDialog extends StatefulWidget {
 }
 
 class _SkippableConfirmationDialogState extends State<_SkippableConfirmationDialog> {
-  final ValueNotifier<bool> _skipNotifier = ValueNotifier(false);
-
-  @override
-  void dispose() {
-    _skipNotifier.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     return AvesDialog(
       scrollableContent: [
         ...widget.delegate.build(context),
-        ValueListenableBuilder<bool>(
-          valueListenable: _skipNotifier,
-          builder: (context, flag, child) => SwitchListTile(
-            value: flag,
-            onChanged: (v) => _skipNotifier.value = v,
-            title: Text(context.l10n.doNotAskAgain),
-          ),
-        ),
       ],
       actions: [
         const CancelButton(),
         TextButton(
           onPressed: () {
-            if (_skipNotifier.value) {
-              _skipConfirmation(widget.type);
-            }
             Navigator.maybeOf(context)?.pop<bool>(true);
           },
           child: Text(widget.confirmationButtonLabel),
