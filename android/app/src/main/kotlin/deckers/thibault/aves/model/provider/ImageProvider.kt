@@ -52,6 +52,7 @@ import deckers.thibault.aves.storage.StorageUtils
 import deckers.thibault.aves.storage.StorageUtils.ensureTrailingSeparator
 import deckers.thibault.aves.storage.StorageUtils.getVolumePath
 import deckers.thibault.aves.storage.apis.MediaStorePermissions
+import deckers.thibault.aves.storage.apis.FilePermissions
 import deckers.thibault.aves.storage.apis.StorageApi
 import deckers.thibault.aves.utils.BitmapUtils
 import deckers.thibault.aves.utils.BmpWriter
@@ -240,7 +241,12 @@ abstract class ImageProvider {
         val initialFileExists = file.exists()
         Log.d(LOG_TAG, "delete content at uri=$uri (exists=$initialContentExists), file at path=$file (exists=$initialFileExists)")
 
-        if (initialContentExists) {
+        // with "all files access", delete the file directly (like a file manager would),
+        // without going through the content resolver, which may ask for confirmation or fail
+        // on orphaned Media Store entries
+        val directDelete = FilePermissions.hasAllFilesAccess()
+
+        if (initialContentExists && !directDelete) {
             // the delete request may yield a `RecoverableSecurityException` when using scoped storage,
             // even if we have permissions on the tree document via SAF
             val scopedStorage = Build.VERSION.SDK_INT > Build.VERSION_CODES.Q
@@ -295,6 +301,15 @@ abstract class ImageProvider {
             val df = StorageUtils.getDocumentFileForExistingFile(context, filePath = path, mediaUri = uri)
             if (df == null || !df.delete()) {
                 throw Exception("failed to delete document with df=$df")
+            }
+        }
+
+        if (directDelete && contentExists(context, uri) && MediaStoreUriHelper.isMediaStoreContentUri(uri)) {
+            // the file is gone, so remove its (possibly orphaned) Media Store entry right away
+            try {
+                context.contentResolver.delete(uri, null, null)
+            } catch (e: Exception) {
+                Log.w(LOG_TAG, "failed to delete Media Store entry at uri=$uri", e)
             }
         }
 

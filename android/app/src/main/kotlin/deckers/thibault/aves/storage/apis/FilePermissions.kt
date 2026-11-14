@@ -2,6 +2,7 @@ package deckers.thibault.aves.storage.apis
 
 import android.content.Context
 import android.os.Build
+import android.os.Environment
 import deckers.thibault.aves.storage.StorageUtils
 
 object FilePermissions : StoragePermissions {
@@ -14,7 +15,16 @@ object FilePermissions : StoragePermissions {
             if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
                 add(StorageUtils.getPrimaryVolumePath(context))
             }
+
+            // with "all files access", every storage volume can be edited directly
+            if (hasAllFilesAccess()) {
+                addAll(StorageUtils.getVolumePaths(context))
+            }
         }
+    }
+
+    fun hasAllFilesAccess(): Boolean {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && Environment.isExternalStorageManager()
     }
 
     fun canEdit(context: Context, anyPath: String): Boolean {
