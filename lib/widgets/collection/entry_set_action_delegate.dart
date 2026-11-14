@@ -370,9 +370,13 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
 
     source.pauseMonitoring();
     final opId = mediaEditService.newOpId;
+    final opStream = mediaEditService.delete(opId: opId, entries: entries);
+    // remove the entries from the collection right away, so that the UI does not wait for the file operation
+    // (entries that fail to be deleted will come back with the next Media Store refresh)
+    await source.removeEntries(entries.map((entry) => entry.uri).toSet(), includeTrash: true);
     await showOpReport<ImageOpEvent>(
       context: context,
-      opStream: mediaEditService.delete(opId: opId, entries: entries),
+      opStream: opStream,
       itemCount: todoCount,
       silent: true,
       onCancel: () => mediaEditService.cancelFileOp(opId),
