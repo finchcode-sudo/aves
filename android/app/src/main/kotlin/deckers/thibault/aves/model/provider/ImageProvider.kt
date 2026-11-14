@@ -237,16 +237,27 @@ abstract class ImageProvider {
 
         val file = File(path)
 
+        // fast path with "all files access": a single content resolver delete (which also drops
+        // orphaned Media Store rows), then remove the file if it is still there,
+        // without any existence queries, permission prompts or rescan retries
+        if (FilePermissions.hasAllFilesAccess()) {
+            if (MediaStoreUriHelper.isMediaStoreContentUri(uri)) {
+                try {
+                    context.contentResolver.delete(uri, null, null)
+                } catch (e: Exception) {
+                    Log.w(LOG_TAG, "failed to delete Media Store row at uri=$uri", e)
+                }
+            }
+            if (file.exists()) FileUtils.delete(file)
+            if (file.exists()) throw Exception("failed to delete file at path=$path")
+            return
+        }
+
         val initialContentExists = contentExists(context, uri)
         val initialFileExists = file.exists()
         Log.d(LOG_TAG, "delete content at uri=$uri (exists=$initialContentExists), file at path=$file (exists=$initialFileExists)")
 
-        // with "all files access", delete the file directly (like a file manager would),
-        // without going through the content resolver, which may ask for confirmation or fail
-        // on orphaned Media Store entries
-        val directDelete = FilePermissions.hasAllFilesAccess()
-
-        if (initialContentExists && !directDelete) {
+        if (initialContentExists) {
             // the delete request may yield a `RecoverableSecurityException` when using scoped storage,
             // even if we have permissions on the tree document via SAF
             val scopedStorage = Build.VERSION.SDK_INT > Build.VERSION_CODES.Q
@@ -301,15 +312,6 @@ abstract class ImageProvider {
             val df = StorageUtils.getDocumentFileForExistingFile(context, filePath = path, mediaUri = uri)
             if (df == null || !df.delete()) {
                 throw Exception("failed to delete document with df=$df")
-            }
-        }
-
-        if (directDelete && contentExists(context, uri) && MediaStoreUriHelper.isMediaStoreContentUri(uri)) {
-            // the file is gone, so remove its (possibly orphaned) Media Store entry right away
-            try {
-                context.contentResolver.delete(uri, null, null)
-            } catch (e: Exception) {
-                Log.w(LOG_TAG, "failed to delete Media Store entry at uri=$uri", e)
             }
         }
 
