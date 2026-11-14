@@ -296,6 +296,8 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin, 
         nameConflictStrategy: nameConflictStrategy,
       ),
       itemCount: todoCount,
+      // no progress overlay when moving to or restoring from the recycle bin
+      silent: moveType == MoveType.toBin || moveType == MoveType.fromBin,
       onCancel: () => mediaEditService.cancelFileOp(opId),
       onDone: (processed) async {
         final successOps = processed.where((op) => op.success).toSet();
