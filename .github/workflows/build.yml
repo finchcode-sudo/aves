@@ -46,7 +46,7 @@ jobs:
           export ANDROID_NDK_HOME=$ANDROID_NDK
           export ANDROID_NDK_ROOT=$ANDROID_NDK
           scripts/apply_flavor_libre.sh
-          ./flutterw build apk -t lib/main_libre.dart --flavor libre --target-platform android-arm64
+          ./flutterw build apk -t lib/main_libre.dart --flavor libre --split-per-abi
         env:
           AVES_STORE_FILE: ${{ github.workspace }}/key.jks
           AVES_STORE_PASSWORD: aves123456
@@ -57,4 +57,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: aves-libre-apk
-          path: build/app/outputs/apk/libre/release/*.apk
+          path: build/app/outputs/apk/libre/release/*arm64-v8a*.apk
