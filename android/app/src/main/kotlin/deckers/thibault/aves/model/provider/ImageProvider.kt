@@ -8,6 +8,7 @@ import android.graphics.ImageDecoder
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
+import android.provider.MediaStore
 import android.provider.BaseColumns
 import android.util.Log
 import androidx.core.net.toUri
@@ -237,10 +238,12 @@ abstract class ImageProvider {
 
         val file = File(path)
 
-        // fast path with "all files access": a single content resolver delete (which also drops
-        // orphaned Media Store rows), then remove the file if it is still there,
+        // fast path with "all files access" or "media management" permission: a single content resolver delete
+        // (which also drops orphaned Media Store rows), then remove the file if it is still there,
         // without any existence queries, permission prompts or rescan retries
-        if (FilePermissions.hasAllFilesAccess()) {
+        val canDeleteSilently = FilePermissions.hasAllFilesAccess() ||
+            (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && MediaStore.canManageMedia(context))
+        if (canDeleteSilently) {
             if (MediaStoreUriHelper.isMediaStoreContentUri(uri)) {
                 try {
                     context.contentResolver.delete(uri, null, null)
@@ -248,9 +251,15 @@ abstract class ImageProvider {
                     Log.w(LOG_TAG, "failed to delete Media Store row at uri=$uri", e)
                 }
             }
-            if (file.exists()) FileUtils.delete(file)
-            if (file.exists()) throw Exception("failed to delete file at path=$path")
-            return
+            if (file.exists()) {
+                try {
+                    FileUtils.delete(file)
+                } catch (e: Exception) {
+                    Log.w(LOG_TAG, "failed to delete file at path=$path", e)
+                }
+            }
+            // otherwise, fall back to the regular path below
+            if (!file.exists()) return
         }
 
         val initialContentExists = contentExists(context, uri)
