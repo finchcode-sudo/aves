@@ -58,7 +58,7 @@ class SettingsDefaults {
 
   // collection
   static const collectionSortFactor = SortFactor.date;
-  static const collectionSectionFactor = EntrySectionFactor.month;
+  static const collectionSectionFactor = EntrySectionFactor.day;
   static const collectionBrowsingQuickActions = <EntrySetAction>[
     .searchCollection,
   ];
