@@ -234,7 +234,16 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin, 
 
     // permission for modification at destinations
     final destinationAlbums = entriesByDestination.keys.toSet();
-    if (!await checkStoragePermissionForAlbums(context, destinationAlbums)) return false;
+    bool isSystemTrashed(AvesEntry entry) => entry.trashed && Uri.tryParse(entry.uri)?.scheme == 'content';
+    if (moveType == MoveType.fromBin) {
+      // items trashed via the system recycle bin are restored in place: no destination permission needed
+      final legacyDestinations = entriesByDestination.entries.where((kv) => kv.value.any((entry) => !isSystemTrashed(entry))).map((kv) => kv.key).toSet();
+      if (!await checkStoragePermissionForAlbums(context, legacyDestinations)) return false;
+      final systemTrashedEntries = entries.where(isSystemTrashed).toSet();
+      if (systemTrashedEntries.isNotEmpty && !await checkStoragePermission(context, systemTrashedEntries)) return false;
+    } else if (!await checkStoragePermissionForAlbums(context, destinationAlbums)) {
+      return false;
+    }
 
     // permission for modification at origins
     final originAlbums = entries.map((entry) => entry.storageDirectory).nonNulls.toSet();

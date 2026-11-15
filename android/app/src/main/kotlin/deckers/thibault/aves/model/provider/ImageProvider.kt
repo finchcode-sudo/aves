@@ -262,6 +262,16 @@ abstract class ImageProvider {
             if (!file.exists()) return
         }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && MediaStoreUriHelper.isMediaStoreContentUri(uri)) {
+            // items in the system recycle bin are hidden from default queries
+            try {
+                val trashedOnlyArgs = android.os.Bundle().apply { putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_ONLY) }
+                if (context.contentResolver.delete(uri, trashedOnlyArgs) > 0) return
+            } catch (ex: Exception) {
+                Log.w(LOG_TAG, "failed to delete trashed item at uri=$uri", ex)
+            }
+        }
+
         val initialContentExists = contentExists(context, uri)
         val initialFileExists = file.exists()
         Log.d(LOG_TAG, "delete content at uri=$uri (exists=$initialContentExists), file at path=$file (exists=$initialFileExists)")
@@ -367,7 +377,12 @@ abstract class ImageProvider {
                         val toBin = targetDir == StorageUtils.TRASH_PATH_PLACEHOLDER
 
                         val sourceFile = if (sourcePath != null) File(sourcePath) else null
-                        if (sourceFile != null && !sourceFile.exists() && toBin) {
+                        val canUseSystemTrash = !copy && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && MediaStoreUriHelper.isMediaStoreContentUri(sourceUri)
+                        if (canUseSystemTrash && toBin && !trashed) {
+                            setSystemTrashed(context, sourceUri, true)
+                        } else if (canUseSystemTrash && !toBin && trashed) {
+                            setSystemTrashed(context, sourceUri, false)
+                        } else if (sourceFile != null && !sourceFile.exists() && toBin) {
                             deleteSingle(context, ContentAddress(mimeType = mimeType, uri = sourceUri, path = sourcePath, pageId = null))
                             deletedFieldMap
                         } else {
@@ -404,6 +419,50 @@ abstract class ImageProvider {
                 }
                 callback.onSuccess(result)
             }
+        }
+    }
+
+    // moves an item in or out of the system recycle bin, without moving the file to another directory
+    @androidx.annotation.RequiresApi(Build.VERSION_CODES.R)
+    private fun setSystemTrashed(context: Context, uri: Uri, trashed: Boolean): FieldMap {
+        val values = android.content.ContentValues().apply {
+            put(MediaStore.MediaColumns.IS_TRASHED, if (trashed) 1 else 0)
+        }
+        try {
+            if (context.contentResolver.update(uri, values, null, null) < 1) {
+                throw Exception("failed to update trash state for uri=$uri")
+            }
+        } catch (ex: SecurityException) {
+            // no media management permission: ask the user via the system trash request
+            val activity = context as? Activity ?: throw ex
+            Log.i(LOG_TAG, "request system trash change trashed=$trashed for uri=$uri")
+            val intentSender = MediaStore.createTrashRequest(context.contentResolver, listOf(uri), trashed).intentSender
+            MainActivity.pendingPermissionCompleter = CompletableFuture<Boolean>()
+            activity.startIntentSenderForResult(intentSender, SCOPED_STORAGE_PERMISSION_REQUEST, null, 0, 0, 0, null)
+            val granted = MainActivity.pendingPermissionCompleter!!.join()
+            MainActivity.pendingPermissionCompleter = null
+            if (!granted) throw Exception("trash request denied for uri=$uri")
+        }
+
+        // the file path changes when trashing or restoring
+        val queryArgs = android.os.Bundle().apply { putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_INCLUDE) }
+        var path: String? = null
+        context.contentResolver.query(uri, arrayOf(MediaStore.MediaColumns.DATA), queryArgs, null)?.use { cursor ->
+            if (cursor.moveToFirst()) path = cursor.getString(0)
+        }
+
+        return if (trashed) {
+            hashMapOf(
+                EntryFields.TRASHED to true,
+                EntryFields.TRASH_PATH to (path ?: ""),
+                "systemTrash" to true,
+            )
+        } else {
+            hashMapOf(
+                EntryFields.URI to uri.toString(),
+                EntryFields.CONTENT_ID to android.content.ContentUris.parseId(uri),
+                EntryFields.PATH to path,
+            )
         }
     }
 
