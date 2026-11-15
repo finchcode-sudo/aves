@@ -364,7 +364,7 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin, 
             }
           }
 
-          if (!toBin || (toBin && settings.confirmAfterMoveToBin)) {
+          if (!toBin) {
             showFeedback(
               navContext,
               FeedbackType.info,
