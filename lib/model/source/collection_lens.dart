@@ -191,7 +191,10 @@ class CollectionLens with ChangeNotifier {
   }
 
   void _applyFilters() {
-    final entries = fixedSelection ?? (filters.contains(TrashFilter.instance) ? source.trashedEntries : source.visibleEntries);
+    var entries = fixedSelection ?? (filters.contains(TrashFilter.instance) ? source.trashedEntries : source.visibleEntries);
+    if (source.pendingHiddenUris.isNotEmpty) {
+      entries = entries.where((entry) => !source.pendingHiddenUris.contains(entry.uri));
+    }
     _disposeSyntheticEntries();
     _filteredSortedEntries = List.of(filters.isEmpty ? entries : entries.where((entry) => filters.every((filter) => filter.test(entry))));
 

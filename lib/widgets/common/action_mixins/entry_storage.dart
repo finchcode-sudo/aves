@@ -287,6 +287,7 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin, 
     final source = context.read<CollectionSource>();
     source.pauseMonitoring();
     final opId = mediaEditService.newOpId;
+    if (toBin) source.hideEntriesPending(entries);
     await showOpReport<MoveOpEvent>(
       context: context,
       opStream: mediaEditService.move(
@@ -317,6 +318,7 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin, 
         final deletedUris = deletedOps.map((op) => op.uri).toSet();
         await source.removeEntries(deletedUris, includeTrash: true);
 
+        if (toBin) source.unhideEntriesPending(entries);
         source.resumeMonitoring();
 
         // cleanup

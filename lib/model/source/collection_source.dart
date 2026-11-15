@@ -362,6 +362,20 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
     }
   }
 
+  // entries hidden from collections while a slow file operation (e.g. moving to the bin) is running,
+  // so that the UI does not wait for it
+  final Set<String> pendingHiddenUris = {};
+
+  void hideEntriesPending(Set<AvesEntry> entries) {
+    pendingHiddenUris.addAll(entries.map((entry) => entry.uri));
+    eventBus.fire(EntryRefreshedEvent(entries));
+  }
+
+  void unhideEntriesPending(Set<AvesEntry> entries) {
+    pendingHiddenUris.removeAll(entries.map((entry) => entry.uri));
+    eventBus.fire(EntryRefreshedEvent(entries));
+  }
+
   Future<void> updateAfterMove({
     required Set<AvesEntry> todoEntries,
     required MoveType moveType,
