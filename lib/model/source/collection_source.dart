@@ -286,7 +286,7 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
           entry.origin = newValue as int;
       }
     });
-    if (entry.trashed) {
+    if (entry.trashed && newFields[EntryFields.systemTrash] != true) {
       final trashPath = entry.storagePath;
       if (trashPath != null) {
         entry.contentId = null;

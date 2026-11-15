@@ -24,5 +24,6 @@ class EntryFields {
   static const sizeBytes = 'sizeBytes'; // long
   static const trashed = 'trashed'; // boolean
   static const trashPath = 'trashPath'; // string
+  static const systemTrash = 'systemTrash'; // boolean
   static const title = 'title'; // string
 }
