@@ -28,6 +28,7 @@ import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/common/providers/filter_group_provider.dart';
 import 'package:aves/widgets/dialogs/aves_confirmation_dialog.dart';
 import 'package:aves/widgets/dialogs/aves_dialog.dart';
+import 'package:aves/widgets/dialogs/delete_choice_dialog.dart';
 import 'package:aves/widgets/dialogs/filter_editors/create_stored_album_dialog.dart';
 import 'package:aves/widgets/dialogs/filter_editors/edit_vault_dialog.dart';
 import 'package:aves/widgets/dialogs/filter_editors/rename_dynamic_album_dialog.dart';
@@ -306,11 +307,25 @@ class AlbumChipSetActionDelegate extends ChipSetActionDelegate<AlbumBaseFilter> 
     final filledAlbums = todoEntries.map((entry) => entry.directory).nonNulls.toSet();
     final emptyAlbums = todoAlbums.whereNot(filledAlbums.contains).toSet();
 
+    var useBin = enableBin;
+    var confirmed = false;
     if (enableBin && filledAlbums.isNotEmpty) {
+      final choice = await showAvesDialog<DeleteChoice>(
+        context: context,
+        builder: (context) => const DeleteChoiceDialog(),
+        routeSettings: const RouteSettings(name: DeleteChoiceDialog.routeName),
+      );
+      if (choice == null) return;
+      useBin = choice == DeleteChoice.moveToBin;
+      confirmed = true;
+    }
+
+    if (useBin && filledAlbums.isNotEmpty) {
       await doMove(
         context,
         moveType: MoveType.toBin,
         entries: todoEntries,
+        confirmed: true,
         onSuccess: () {
           source.forgetNewAlbums(todoAlbums);
           source.cleanEmptyAlbums(emptyAlbums);
@@ -323,7 +338,8 @@ class AlbumChipSetActionDelegate extends ChipSetActionDelegate<AlbumBaseFilter> 
     final l10n = context.l10n;
     final todoCount = todoEntries.length;
 
-    if (!await showConfirmationDialog(
+    if (!confirmed &&
+        !await showConfirmationDialog(
       context: context,
       message: filters.length == 1 ? l10n.deleteSingleAlbumConfirmationDialogMessage(todoCount) : l10n.deleteMultiAlbumConfirmationDialogMessage(todoCount),
       ok: l10n.deleteButtonLabel,
