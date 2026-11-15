@@ -161,7 +161,7 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
       TrashFilter.instance,
       ..._getAppHiddenFilters(),
     };
-    return entries.where((entry) => !hiddenFilters.any((filter) => filter.test(entry)));
+    return entries.where((entry) => !pendingHiddenUris.contains(entry.uri) && !hiddenFilters.any((filter) => filter.test(entry)));
   }
 
   Iterable<AvesEntry> _applyTrashFilter(Iterable<AvesEntry> entries) {
@@ -368,11 +368,17 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
 
   void hideEntriesPending(Set<AvesEntry> entries) {
     pendingHiddenUris.addAll(entries.map((entry) => entry.uri));
+    // refresh albums right away (album page, counts, empty albums), instead of waiting for the file operation
+    _invalidate(entries: entries);
+    updateDirectories();
     eventBus.fire(EntryRefreshedEvent(entries));
   }
 
   void unhideEntriesPending(Set<AvesEntry> entries) {
     pendingHiddenUris.removeAll(entries.map((entry) => entry.uri));
+    // entries that failed to move come back
+    _invalidate(entries: entries);
+    updateDirectories();
     eventBus.fire(EntryRefreshedEvent(entries));
   }
 
