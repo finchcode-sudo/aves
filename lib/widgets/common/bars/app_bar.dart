@@ -18,12 +18,18 @@ class const AvesAppBar({
   required final Widget? leading,
   required final Widget title,
   required final List<Widget> Function(BuildContext context, double maxWidth) actions,
+  /// Big title band under the toolbar row, like a Material3 `LargeTopAppBar`
+  /// (ReFra uses one for the trash screen).
+  final Widget? largeTitle,
   final Widget? bottom,
   final Object? transitionKey,
 }) extends StatelessWidget {
   static const leadingHeroTag = 'appbar-leading';
   static const titleHeroTag = 'appbar-title';
   static const double _titleMinWidth = 96;
+
+  /// Material3 `LargeTopAppBar` is 152dp tall: 64dp toolbar + 88dp title band.
+  static const double largeTitleHeight = 88;
   static const margin = EdgeInsets.all(8);
 
   @override
@@ -127,6 +133,20 @@ class const AvesAppBar({
                         ],
                       ),
                     ),
+                    if (largeTitle != null)
+                      SizedBox(
+                        height: largeTitleHeight,
+                        child: Padding(
+                          padding: const EdgeInsetsDirectional.only(start: 16, end: 16, bottom: 20),
+                          child: Align(
+                            alignment: AlignmentDirectional.bottomStart,
+                            child: DefaultTextStyle(
+                              style: theme.appBarTheme.titleTextStyle!,
+                              child: largeTitle!,
+                            ),
+                          ),
+                        ),
+                      ),
                     ?bottom,
                   ],
                 ),

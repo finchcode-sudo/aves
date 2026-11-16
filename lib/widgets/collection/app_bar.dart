@@ -205,8 +205,9 @@ class _CollectionAppBarState extends State<CollectionAppBar> with RouteAware, Si
                           hasDrawer: appMode.canNavigate,
                           isSelecting: isSelecting,
                         ),
-                        title: _buildAppBarTitle(isSelecting),
+                        title: isTrash && !settings.useTvLayout ? const SizedBox.shrink() : _buildAppBarTitle(isSelecting),
                         actions: (context, maxWidth) => useTvLayout ? [] : _buildActions(context, selection, maxWidth),
+                        largeTitle: isTrash && !settings.useTvLayout ? _buildLargeTitle() : null,
                         bottom: Column(
                           children: [
                             if (useTvLayout)
@@ -273,6 +274,11 @@ class _CollectionAppBarState extends State<CollectionAppBar> with RouteAware, Si
   double _getAppBarContentHeight(BuildContext context) {
     final textScaler = MediaQuery.textScalerOf(context);
     double height = textScaler.scale(kToolbarHeight);
+    if (isTrash && !settings.useTvLayout) {
+      // ReFra `MediaScreen` uses a Material3 `LargeTopAppBar` on the trash screen:
+      // a 64dp toolbar row plus an 88dp band holding the big album title.
+      height += AvesAppBar.largeTitleHeight;
+    }
     if (settings.useTvLayout) {
       height += CaptionedButton.getTelevisionButtonHeight(context);
     }
@@ -290,6 +296,24 @@ class _CollectionAppBarState extends State<CollectionAppBar> with RouteAware, Si
 
   Widget? _buildAppBarLeading({required bool hasDrawer, required bool isSelecting}) {
     if (settings.useTvLayout) return null;
+
+    if (isTrash) {
+      // ReFra `MediaScreen` passes `NavigationButton(alwaysGoBack = true)` to its
+      // `LargeTopAppBar`: the trash screen always shows a plain back arrow and
+      // never a drawer handle.
+      return IconButton(
+        icon: const Icon(Icons.arrow_back),
+        tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+        onPressed: () {
+          final navigator = Navigator.of(context);
+          if (navigator.canPop()) {
+            navigator.maybePop();
+          } else {
+            collection.removeFilter(TrashFilter.instance);
+          }
+        },
+      );
+    }
 
     if (!hasDrawer) {
       return const CloseButton();
@@ -359,6 +383,17 @@ class _CollectionAppBarState extends State<CollectionAppBar> with RouteAware, Si
         child: title,
       );
     }
+  }
+
+  Widget _buildLargeTitle() {
+    // ReFra `TwoLinedDateToolbarTitle(albumName = R.string.trash, dateHeader)`
+    // inside a Material3 `LargeTopAppBar`: the big title is the album name.
+    return Text(
+      context.l10n.trashPageTitle,
+      style: Theme.of(context).textTheme.headlineMedium,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    );
   }
 
   List<Widget> _buildActions(BuildContext context, Selection<AvesEntry> selection, double maxWidth) {
