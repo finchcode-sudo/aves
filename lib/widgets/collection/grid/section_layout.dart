@@ -1,4 +1,5 @@
 import 'package:aves/model/entry/entry.dart';
+import 'package:aves/model/filters/trash.dart';
 import 'package:aves/model/source/collection_lens.dart';
 import 'package:aves/model/source/section_keys.dart';
 import 'package:aves/widgets/collection/grid/headers/any.dart';
@@ -30,7 +31,12 @@ class SectionedEntryListLayoutProvider extends SectionedListLayoutProvider<AvesE
        );
 
   @override
-  bool get showHeaders => collection.showHeaders;
+  bool get showHeaders {
+    // ReFra `TrashedScreen` passes `allowHeaders = false` and
+    // `enableStickyHeaders = false`: the trash is a flat grid, no date headers.
+    if (collection.filters.contains(TrashFilter.instance)) return false;
+    return collection.showHeaders;
+  }
 
   @override
   Map<SectionKey, List<AvesEntry>> get sections => collection.sections;
