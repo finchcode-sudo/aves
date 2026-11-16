@@ -142,7 +142,8 @@ class _CollectionPageState extends State<CollectionPage> {
               selector: (context, s) => s.enableBottomNavigationBar,
               builder: (context, enableBottomNavigationBar, child) {
                 final canNavigate = context.select<ValueNotifier<AppMode>, bool>((v) => v.value.canNavigate);
-                final showBottomNavigationBar = canNavigate && enableBottomNavigationBar;
+                // ReFra shows the trash as a standalone screen: no bottom bar.
+                final showBottomNavigationBar = !_isTrash && canNavigate && enableBottomNavigationBar;
 
                 return NotificationListener<DraggableScrollbarNotification>(
                   onNotification: (notification) {

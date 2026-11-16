@@ -10,6 +10,7 @@ class const GridItemSelectionOverlay<T>({
   required final T item,
   final BorderRadius? borderRadius,
   final EdgeInsets? padding,
+  final bool? showUnselectedIndicator,
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -35,11 +36,13 @@ class const GridItemSelectionOverlay<T>({
                       scale: animation,
                       child: child,
                     ),
-                    child: OverlayIcon(
-                      key: ValueKey(selectedRatio == 1),
-                      icon: selectedRatio == 1 ? AIcons.selected : AIcons.unselected,
-                      margin: EdgeInsets.zero,
-                    ),
+                    child: selectedRatio == 1 || (showUnselectedIndicator ?? true)
+                        ? OverlayIcon(
+                            key: ValueKey(selectedRatio == 1),
+                            icon: selectedRatio == 1 ? AIcons.selected : AIcons.unselected,
+                            margin: EdgeInsets.zero,
+                          )
+                        : const SizedBox.shrink(),
                   ),
                 );
               },

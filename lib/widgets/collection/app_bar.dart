@@ -321,6 +321,9 @@ class _CollectionAppBarState extends State<CollectionAppBar> with RouteAware, Si
     final appMode = context.watch<ValueNotifier<AppMode>>().value;
 
     if (isSelecting) {
+      // ReFra keeps the album name in the top bar while selecting
+      // (the count lives in the selection sheet pill instead)
+      if (isTrash) return FadingLine(l10n.trashPageTitle);
       // `Selection` may not be available during hero
       return Selector<Selection<AvesEntry>?, int>(
         selector: (context, selection) => selection?.selectedItemCount ?? 0,

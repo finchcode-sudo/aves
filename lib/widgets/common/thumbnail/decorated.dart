@@ -57,6 +57,9 @@ class const DecoratedThumbnail({
           GridItemSelectionOverlay<AvesEntry>(
             item: entry,
             padding: const EdgeInsets.all(2),
+            // ReFra trashed grid: no "pre-selection" ring on untouched tiles,
+            // only the picked ones are marked
+            showUnselectedIndicator: !entry.trashed,
           ),
           ThumbnailZoomOverlay(
             onZoom: () => OpenViewerNotification(entry).dispatch(context),
