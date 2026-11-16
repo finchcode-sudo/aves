@@ -1,5 +1,6 @@
 import 'package:aves/app_mode.dart';
 import 'package:aves/model/entry/entry.dart';
+import 'package:aves/model/filters/trash.dart';
 import 'package:aves/model/selection.dart';
 import 'package:aves/model/source/collection_lens.dart';
 import 'package:aves/services/intent_service.dart';
@@ -24,6 +25,10 @@ class const InteractiveTile({
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    // ReFra's trash grid sets `allowSelection = true`; since Aves has no
+    // long-press selection at all, the trash would otherwise be read-only
+    // (its app bar has no actions, cf `TrashedScreen.navActionsContent = {}`).
+    final longPressSelects = collection.filters.contains(TrashFilter.instance);
     return InkWell(
       onTap: () {
         final appMode = context.read<ValueNotifier<AppMode>>().value;
@@ -47,6 +52,13 @@ class const InteractiveTile({
             break;
         }
       },
+      onLongPress: longPressSelects
+          ? () {
+              final appMode = context.read<ValueNotifier<AppMode>>().value;
+              if (appMode != .main) return;
+              context.read<Selection<AvesEntry>>().toggleSelection(entry);
+            }
+          : null,
       child: MetaData(
         metaData: ScalerMetadata(entry),
         child: Tile(

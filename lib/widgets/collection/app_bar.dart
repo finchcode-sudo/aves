@@ -39,7 +39,6 @@ import 'package:aves/widgets/common/tile_extent_controller.dart';
 import 'package:aves/widgets/dialogs/aves_dialog.dart';
 import 'package:aves/widgets/dialogs/change_layout_dialog.dart';
 import 'package:aves/widgets/search/collection_search_page_route.dart';
-import 'package:aves/widgets/trash/trash_nav_actions.dart';
 import 'package:aves/widgets/viewer/controls/notifications.dart';
 import 'package:aves_model/aves_model.dart';
 import 'package:collection/collection.dart';
@@ -362,8 +361,11 @@ class _CollectionAppBarState extends State<CollectionAppBar> with RouteAware, Si
   List<Widget> _buildActions(BuildContext context, Selection<AvesEntry> selection, double maxWidth) {
     final appMode = context.watch<ValueNotifier<AppMode>>().value;
     if (isTrash && !settings.useTvLayout) {
-      // ReFra `TrashedNavActions`: Restore + (Delete | Empty) text buttons
-      return [TrashNavActions(collection: collection)];
+      // ReFra `TrashedScreen` passes an empty `navActionsContent`, so the trash
+      // app bar has no actions at all. The batched actions live in
+      // `TrashAutoDeleteFooter` (every item) and `TrashSelectionSheet`
+      // (the current selection), exactly like ReFra.
+      return const [];
     }
     final isSelecting = selection.isSelecting;
     final selectedItemCount = selection.selectedItemCount;
