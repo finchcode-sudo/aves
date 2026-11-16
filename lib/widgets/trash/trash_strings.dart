@@ -30,6 +30,11 @@ class TrashStrings {
   static const String selectNone = 'Deselect all';
   static const String closeContentDescription = 'Close';
 
+  // app bar actions (ReFra `TrashedNavActions`)
+  // TODO: `delete` is shared with the selection sheet on purpose: ReFra shows
+  // `action_delete` while a selection is active and `trash_empty` otherwise.
+  static const String empty = 'Empty';
+
   // dialog titles
   static const String dialogToTrash = 'Moving to Trash';
   static const String dialogDelete = 'Deleting Permanently';

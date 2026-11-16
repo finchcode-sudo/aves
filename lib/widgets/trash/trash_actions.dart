@@ -38,7 +38,7 @@ class TrashActions {
         );
       case TrashAction.restore:
         return _delegate.doMove(
-          context: context,
+          context,
           moveType: MoveType.fromBin,
           entries: entries,
           confirmed: true,

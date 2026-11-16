@@ -34,7 +34,7 @@ class TrashSelectionSheet extends StatelessWidget {
     final allSelected = allMedia.isNotEmpty && selection.isSelected(allMedia);
 
     return Align(
-      alignment: Alignment.bottomEnd,
+      alignment: AlignmentDirectional.bottomEnd,
       heightFactor: 1,
       child: Padding(
         padding: EdgeInsets.only(
