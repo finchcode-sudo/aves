@@ -88,11 +88,15 @@ class const CollectionGrid({
 class _CollectionGridState extends State<CollectionGrid> {
   TileExtentController? _tileExtentController;
 
+  /// trash footer sliver: its height shifts every item, so hit-testing needs it
+  final _TrashFooterMetrics _trashFooterMetrics = _TrashFooterMetrics();
+
   String get settingsRouteKey => widget.settingsRouteKey;
 
   @override
   void dispose() {
     _tileExtentController?.dispose();
+    _trashFooterMetrics.height.dispose();
     super.dispose();
   }
 
@@ -143,8 +147,6 @@ class _CollectionGridContentState extends State<_CollectionGridContent> {
   final ValueNotifier<AvesEntry?> _focusedItemNotifier = ValueNotifier(null);
   final ValueNotifier<bool> _isScrollingNotifier = ValueNotifier(false);
   final ValueNotifier<AppMode> _selectingAppModeNotifier = ValueNotifier(.pickFilteredMediaInternal);
-  // trash footer sliver: its height shifts every item, so hit-testing needs it
-  final _TrashFooterMetrics _trashFooterMetrics = _TrashFooterMetrics();
 
   @override
   void initState() {
@@ -157,7 +159,6 @@ class _CollectionGridContentState extends State<_CollectionGridContent> {
     _focusedItemNotifier.dispose();
     _isScrollingNotifier.dispose();
     _selectingAppModeNotifier.dispose();
-    _trashFooterMetrics.height.dispose();
     super.dispose();
   }
 
