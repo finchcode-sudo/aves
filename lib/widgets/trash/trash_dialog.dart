@@ -51,31 +51,34 @@ class _TrashDialogState extends State<TrashDialog> {
   TrashAction get _action => widget.request.action;
 
   String get _title {
+    final t = TrashStrings.of(context);
     switch (_action) {
       case TrashAction.delete:
-        return TrashStrings.dialogDelete;
+        return t.dialogDelete;
       case TrashAction.restore:
-        return TrashStrings.dialogFromTrash;
+        return t.dialogFromTrash;
     }
   }
 
   String get _progressText {
+    final t = TrashStrings.of(context);
     final count = _resolvedItemCount > 0 ? _resolvedItemCount : _media.length;
     switch (_action) {
       case TrashAction.delete:
-        return TrashStrings.deleting(count);
+        return t.deleting(count);
       case TrashAction.restore:
-        return TrashStrings.restoring(count);
+        return t.restoring(count);
     }
   }
 
   String get _mainButtonText {
-    if (_confirmed) return TrashStrings.confirmed;
+    final t = TrashStrings.of(context);
+    if (_confirmed) return t.confirmed;
     switch (_action) {
       case TrashAction.delete:
-        return TrashStrings.deletePermanently;
+        return t.deletePermanently;
       case TrashAction.restore:
-        return TrashStrings.restore;
+        return t.restore;
     }
   }
 
@@ -198,7 +201,7 @@ class _TrashDialogState extends State<TrashDialog> {
                                         ),
                                       ),
                                       TextSpan(
-                                        text: '\n${TrashStrings.items(_media.length)}',
+                                        text: '\n${TrashStrings.of(context).items(_media.length)}',
                                         style: theme.textTheme.bodyMedium?.copyWith(
                                           color: colorScheme.onSurfaceVariant,
                                         ),
@@ -227,7 +230,7 @@ class _TrashDialogState extends State<TrashDialog> {
                                 onTap: () {
                                   ScaffoldMessenger.maybeOf(context)?.showSnackBar(
                                     SnackBar(
-                                      content: Text(TrashStrings.longPressToRemove),
+                                      content: Text(TrashStrings.of(context).longPressToRemove),
                                       duration: const Duration(seconds: 2),
                                     ),
                                   );
@@ -249,7 +252,7 @@ class _TrashDialogState extends State<TrashDialog> {
                                     foregroundColor: colorScheme.onTertiaryContainer,
                                     minimumSize: const Size.fromHeight(48),
                                   ),
-                                  child: Text(TrashStrings.cancel),
+                                  child: Text(TrashStrings.of(context).cancel),
                                 ),
                               ),
                               const SizedBox(width: 24),

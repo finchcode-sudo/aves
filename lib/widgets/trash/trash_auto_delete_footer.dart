@@ -8,7 +8,8 @@ import 'package:provider/provider.dart';
 ///
 /// Sits above the grid (never inside it) and contains:
 /// * `Restore all` / `Delete all permanently`, side by side, 16dp apart,
-///   only while the trash is not empty;
+///   64dp tall, `extraLarge` rounded, `titleMedium` semibold — only while the
+///   trash is not empty;
 /// * an info card (`Info` icon + `Trash` title + retention summary) that is
 ///   always visible, exactly like ReFra's `SettingsItem(Preference(...))`.
 class TrashAutoDeleteFooter extends StatelessWidget {
@@ -22,6 +23,7 @@ class TrashAutoDeleteFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final t = TrashStrings.of(context);
     // `CollectionGrid` is also used by the picker page, where no trash
     // controller is provided; degrade gracefully instead of crashing there.
     TrashController? controller;
@@ -52,7 +54,7 @@ class TrashAutoDeleteFooter extends StatelessWidget {
                           children: [
                             Expanded(
                               child: _TrashButton(
-                                label: TrashStrings.restoreAll,
+                                label: t.restoreAll,
                                 backgroundColor: theme.colorScheme.tertiaryContainer,
                                 foregroundColor: theme.colorScheme.onTertiaryContainer,
                                 onPressed: () => controller?.open(TrashAction.restore, media),
@@ -61,7 +63,7 @@ class TrashAutoDeleteFooter extends StatelessWidget {
                             const SizedBox(width: 16),
                             Expanded(
                               child: _TrashButton(
-                                label: TrashStrings.deleteAllPermanently,
+                                label: t.deleteAllPermanently,
                                 backgroundColor: theme.colorScheme.primary,
                                 foregroundColor: theme.colorScheme.onPrimary,
                                 onPressed: () => controller?.open(TrashAction.delete, media),
@@ -71,7 +73,10 @@ class TrashAutoDeleteFooter extends StatelessWidget {
                         ),
                       ),
               ),
-              _TrashInfoCard(),
+              _TrashInfoCard(
+                title: t.pageTitle,
+                summary: t.deletionWarning,
+              ),
             ],
           ),
         );
@@ -80,6 +85,9 @@ class TrashAutoDeleteFooter extends StatelessWidget {
   }
 }
 
+/// Mirrors ReFra's `SetupButton`: `ComponentSize.ButtonHeight` (64dp),
+/// `MaterialTheme.shapes.extraLarge` (28dp), `titleMedium` semibold, and no
+/// line limit — long translations wrap instead of being clipped to `...`.
 class _TrashButton extends StatelessWidget {
   final String label;
   final Color backgroundColor;
@@ -95,21 +103,23 @@ class _TrashButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return FilledButton(
       onPressed: onPressed,
       style: FilledButton.styleFrom(
         backgroundColor: backgroundColor,
         foregroundColor: foregroundColor,
-        minimumSize: const Size.fromHeight(48),
+        minimumSize: const Size.fromHeight(64),
         padding: const EdgeInsets.symmetric(horizontal: 12),
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(24)),
+          borderRadius: BorderRadius.all(Radius.circular(28)),
+        ),
+        textStyle: theme.textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.w600,
         ),
       ),
       child: Text(
         label,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
         textAlign: TextAlign.center,
       ),
     );
@@ -117,6 +127,14 @@ class _TrashButton extends StatelessWidget {
 }
 
 class _TrashInfoCard extends StatelessWidget {
+  final String title;
+  final String summary;
+
+  const _TrashInfoCard({
+    required this.title,
+    required this.summary,
+  });
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -141,12 +159,12 @@ class _TrashInfoCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    TrashStrings.pageTitle,
+                    title,
                     style: theme.textTheme.bodyLarge,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    TrashStrings.deletionWarning,
+                    summary,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),

@@ -982,5 +982,59 @@
     "mapHideItemTracks": "隱藏路徑",
     "tileLayoutCalendar": "日曆",
     "collectionActionShowLayoutBar": "顯示版面列",
-    "collectionActionHideLayoutBar": "隱藏版面列"
+    "collectionActionHideLayoutBar": "隱藏版面列",
+  "trashPageTitle": "垃圾桶",
+  "trashEmptyStateTitle": "垃圾桶為空",
+  "trashEmptyStateContentDescription": "已清空垃圾桶",
+  "trashRestoreAll": "全部還原",
+  "trashDeleteAllPermanently": "永久刪除全部",
+  "trashDeletionWarning": "刪除的照片和影片將在 30 天後清除。",
+  "trashRestore": "復原",
+  "trashEmpty": "清空",
+  "trashDelete": "刪除",
+  "trashSelectionCloseContentDescription": "關閉選取視窗",
+  "trashDialogToTrash": "移至垃圾桶",
+  "trashDialogDelete": "永久刪除",
+  "trashDialogFromTrash": "從垃圾桶還原項目",
+  "trashItemsCount": "{count} 個項目",
+  "@trashItemsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashTrashingItems": "正在移除 {count} 個項目至垃圾桶...",
+  "@trashTrashingItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashDeletingItems": "正在刪除 {count} 個項目...",
+  "@trashDeletingItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashRestoringItems": "正在還原 {count} 個項目...",
+  "@trashRestoringItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashLongPressToRemove": "長按以移除項目",
+  "trashMoveToTrash": "移到垃圾桶",
+  "trashDeletePermanently": "永久刪除",
+  "trashConfirmed": "已確認",
+  "trashCancel": "取消",
+  "trashIncompatibleTitle": "部分項目無法移至垃圾桶！",
+  "trashIncompatibleSummary": "這些項目將被永久刪除。",
+  "trashSelectAll": "全部選取",
+  "trashClearSelection": "全部刪除"
 }

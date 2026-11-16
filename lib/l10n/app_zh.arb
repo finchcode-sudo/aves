@@ -767,5 +767,59 @@
     "settingsThumbnailShowCredentialValidity": "显示凭据有效性",
     "aboutCreditsStateFlags": "来自 Wikimedia Commons 的地区旗帜。它们位于公共领域，除了：",
     "exportEntryDialogDimension": "尺寸：",
-    "sortRandomly": "随机"
+    "sortRandomly": "随机",
+  "trashPageTitle": "回收站",
+  "trashEmptyStateTitle": "垃圾箱为空",
+  "trashEmptyStateContentDescription": "回收站是空的",
+  "trashRestoreAll": "恢复全部",
+  "trashDeleteAllPermanently": "永久删除所有",
+  "trashDeletionWarning": "您删除的照片和视频将在 30 天后被彻底移除。",
+  "trashRestore": "恢复",
+  "trashEmpty": "清空",
+  "trashDelete": "删除",
+  "trashSelectionCloseContentDescription": "关闭选择对话框",
+  "trashDialogToTrash": "移至回收站",
+  "trashDialogDelete": "永久删除",
+  "trashDialogFromTrash": "从回收站中恢复",
+  "trashItemsCount": "{count} 项目",
+  "@trashItemsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashTrashingItems": "正在回收 {count} 个项目..",
+  "@trashTrashingItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashDeletingItems": "正在删除 {count} 个项目..",
+  "@trashDeletingItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashRestoringItems": "正在恢复 {count} 个项目..",
+  "@trashRestoringItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashLongPressToRemove": "长按移除",
+  "trashMoveToTrash": "移动到垃圾箱",
+  "trashDeletePermanently": "永久删除",
+  "trashConfirmed": "已确认",
+  "trashCancel": "取消",
+  "trashIncompatibleTitle": "部分项目无法移至回收站",
+  "trashIncompatibleSummary": "这些项目将被永久删除。",
+  "trashSelectAll": "全选",
+  "trashClearSelection": "取消全选"
 }

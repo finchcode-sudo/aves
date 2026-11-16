@@ -40,7 +40,6 @@ import 'package:aves/widgets/dialogs/aves_dialog.dart';
 import 'package:aves/widgets/dialogs/change_layout_dialog.dart';
 import 'package:aves/widgets/search/collection_search_page_route.dart';
 import 'package:aves/widgets/trash/trash_nav_actions.dart';
-import 'package:aves/widgets/trash/trash_strings.dart';
 import 'package:aves/widgets/viewer/controls/notifications.dart';
 import 'package:aves_model/aves_model.dart';
 import 'package:collection/collection.dart';
@@ -342,7 +341,7 @@ class _CollectionAppBarState extends State<CollectionAppBar> with RouteAware, Si
       if (appMode.isPickingMedia) {
         titleText = l10n.collectionPickPageTitle;
       } else if (isTrash) {
-        titleText = TrashStrings.pageTitle;
+        titleText = l10n.trashPageTitle;
       } else {
         titleText = l10n.collectionPageTitle;
       }

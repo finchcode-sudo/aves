@@ -24,6 +24,7 @@ class TrashSelectionSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final t = TrashStrings.of(context);
     final selection = context.watch<Selection<AvesEntry>>();
     final controller = context.read<TrashController>();
 
@@ -59,7 +60,8 @@ class TrashSelectionSheet extends StatelessWidget {
                 Expanded(
                   child: Align(
                     alignment: Alignment.centerRight,
-                    child: TextButton(
+                    child: _SelectAllAddon(
+                      allSelected: allSelected,
                       onPressed: () {
                         if (allSelected) {
                           selection.clearSelection();
@@ -67,9 +69,6 @@ class TrashSelectionSheet extends StatelessWidget {
                           selection.addToSelection(allMedia);
                         }
                       },
-                      child: Text(
-                        allSelected ? TrashStrings.selectNone : TrashStrings.selectAll,
-                      ),
                     ),
                   ),
                 ),
@@ -88,12 +87,12 @@ class TrashSelectionSheet extends StatelessWidget {
                 children: [
                   _SelectionBarItem(
                     icon: Icons.restore_from_trash,
-                    title: TrashStrings.restore,
+                    title: t.restore,
                     onPressed: () => controller.open(TrashAction.restore, selectedMedia),
                   ),
                   _SelectionBarItem(
                     icon: Icons.delete_outline,
-                    title: TrashStrings.delete,
+                    title: t.delete,
                     onPressed: () => controller.open(TrashAction.delete, selectedMedia),
                   ),
                 ],
@@ -135,13 +134,66 @@ class _SelectionPill extends StatelessWidget {
                 Icons.close,
                 size: 20,
                 color: color,
-                semanticLabel: TrashStrings.closeContentDescription,
+                semanticLabel: TrashStrings.of(context).closeContentDescription,
               ),
               const SizedBox(width: 8),
               Text(
                 '$count',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: color,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// ReFra `SelectAllAddon`: a pill with an icon and a label, switching between
+/// `select_all` and `clear_selection`, and between `surfaceColorAtElevation(2)`
+/// and `primaryContainer` when everything is selected.
+class _SelectAllAddon extends StatelessWidget {
+  final bool allSelected;
+  final VoidCallback onPressed;
+
+  const _SelectAllAddon({
+    required this.allSelected,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final t = TrashStrings.of(context);
+    final label = allSelected ? t.clearSelection : t.selectAll;
+    final background = allSelected ? theme.colorScheme.primaryContainer : theme.colorScheme.surfaceContainerHigh;
+    final foreground = allSelected ? theme.colorScheme.onPrimaryContainer : theme.colorScheme.onSurface;
+    return Material(
+      color: background,
+      elevation: 2,
+      shape: const StadiumBorder(),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onPressed,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                allSelected ? Icons.deselect : Icons.select_all,
+                size: 20,
+                color: foreground,
+                semanticLabel: label,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: foreground,
                   fontWeight: FontWeight.w500,
                 ),
               ),

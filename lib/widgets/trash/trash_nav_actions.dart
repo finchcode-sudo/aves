@@ -19,6 +19,7 @@ class TrashNavActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final t = TrashStrings.of(context);
     final selection = context.watch<Selection<AvesEntry>>();
     final controller = context.read<TrashController>();
 
@@ -37,14 +38,14 @@ class TrashNavActions extends StatelessWidget {
         TextButton(
           onPressed: () => controller.open(TrashAction.restore, targets),
           child: Text(
-            TrashStrings.restore,
+            t.restore,
             style: TextStyle(color: color),
           ),
         ),
         TextButton(
           onPressed: () => controller.open(TrashAction.delete, targets),
           child: Text(
-            selection.isSelecting ? TrashStrings.delete : TrashStrings.empty,
+            selection.isSelecting ? t.delete : t.empty,
             style: TextStyle(color: color),
           ),
         ),

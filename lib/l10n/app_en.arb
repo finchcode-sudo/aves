@@ -1164,5 +1164,59 @@
   "panoramaEnableSensorControl": "Enable sensor control",
   "panoramaDisableSensorControl": "Disable sensor control",
 
-  "sourceViewerPageTitle": "Source"
+  "sourceViewerPageTitle": "Source",
+  "trashPageTitle": "Trash",
+  "trashEmptyStateTitle": "Trash is empty",
+  "trashEmptyStateContentDescription": "Trash is empty",
+  "trashRestoreAll": "Restore all",
+  "trashDeleteAllPermanently": "Delete all permanently",
+  "trashDeletionWarning": "Photos and videos you delete will be removed after 30 days.",
+  "trashRestore": "Restore",
+  "trashEmpty": "Empty",
+  "trashDelete": "Delete",
+  "trashSelectionCloseContentDescription": "Close selection dialog",
+  "trashDialogToTrash": "Moving to Trash",
+  "trashDialogDelete": "Deleting Permanently",
+  "trashDialogFromTrash": "Restoring from Trash",
+  "trashItemsCount": "{count} items",
+  "@trashItemsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashTrashingItems": "Trashing {count} items..",
+  "@trashTrashingItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashDeletingItems": "Deleting {count} items…",
+  "@trashDeletingItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashRestoringItems": "Restoring {count} items..",
+  "@trashRestoringItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashLongPressToRemove": "Long press to remove",
+  "trashMoveToTrash": "Move to Trash",
+  "trashDeletePermanently": "Delete permanently",
+  "trashConfirmed": "Confirmed",
+  "trashCancel": "Cancel",
+  "trashIncompatibleTitle": "Some items cannot be trashed!",
+  "trashIncompatibleSummary": "Such items will be deleted permanently instead.",
+  "trashSelectAll": "Select all",
+  "trashClearSelection": "Remove All"
 }

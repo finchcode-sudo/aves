@@ -1,64 +1,85 @@
-/// Text resources for the trash experience.
+import 'package:aves/l10n/l10n.dart';
+import 'package:aves/widgets/common/extensions/build_context.dart';
+import 'package:flutter/widgets.dart';
+
+/// ReFra's trash copy, resolved through Aves' localization pipeline.
 ///
-/// Every entry below mirrors ReFra's `app/src/main/res/values/strings.xml`
-/// one to one — same wording, same punctuation, same capitalisation — so both
-/// apps read identically.
+/// ReFra reads every label from `res/values/strings.xml` (+ `values-zh-rCN`,
+/// `values-zh-rTW`, ...), so it follows the system language. The same 26
+/// messages were copied verbatim into `lib/l10n/app_en.arb`, `app_zh.arb` and
+/// `app_zh_Hant.arb` under the `trash*` prefix, which makes the trash screen
+/// behave like the rest of Aves instead of being hardcoded English.
 ///
-/// Why not `lib/l10n/app_en.arb`? The generated localization (`lib/l10ngen`)
-/// is git ignored and produced by `flutter gen-l10n` at build time. Adding ARB
-/// keys without regenerating would break `context.l10n.<newKey>` references,
-/// so the ReFra parity strings are kept in one place instead.
+/// This class is a thin, typed facade over those generated getters so the
+/// widgets keep reading like ReFra's Compose code.
 class TrashStrings {
-  const TrashStrings._();
+  final AppLocalizations _l10n;
 
-  // page / navigation
-  static const String pageTitle = 'Trash';
+  const TrashStrings(this._l10n);
 
-  // empty state
-  static const String emptyTitle = 'Trash is empty';
-  static const String emptyContentDescription = 'Trash is empty';
+  static TrashStrings of(BuildContext context) => TrashStrings(context.l10n);
 
-  // footer
-  static const String restoreAll = 'Restore all';
-  static const String deleteAllPermanently = 'Delete all permanently';
-  static const String deletionWarning = 'Photos and videos you delete will be removed after 30 days.';
+  // page / navigation (ReFra `trash`)
+  String get pageTitle => _l10n.trashPageTitle;
 
-  // selection sheet
-  static const String restore = 'Restore';
-  static const String delete = 'Delete';
-  static const String selectAll = 'Select all';
-  static const String selectNone = 'Deselect all';
-  static const String closeContentDescription = 'Close';
+  // empty state (`trash_empty_state_title`, `empty_trash_cd`)
+  String get emptyTitle => _l10n.trashEmptyStateTitle;
 
-  // app bar actions (ReFra `TrashedNavActions`)
-  // TODO: `delete` is shared with the selection sheet on purpose: ReFra shows
-  // `action_delete` while a selection is active and `trash_empty` otherwise.
-  static const String empty = 'Empty';
+  String get emptyContentDescription => _l10n.trashEmptyStateContentDescription;
 
-  // dialog titles
-  static const String dialogToTrash = 'Moving to Trash';
-  static const String dialogDelete = 'Deleting Permanently';
-  static const String dialogFromTrash = 'Restoring from Trash';
+  // footer (`trash_restore_all`, `action_delete_all_permanently`,
+  // `trash_deletion_warning`)
+  String get restoreAll => _l10n.trashRestoreAll;
 
-  // dialog progress
-  static String items(int count) => '$count items';
+  String get deleteAllPermanently => _l10n.trashDeleteAllPermanently;
 
-  static String trashing(int count) => 'Trashing $count items..';
+  String get deletionWarning => _l10n.trashDeletionWarning;
 
-  static String deleting(int count) => 'Deleting $count items…';
+  // selection sheet (`trash_restore`, `action_delete`, `trash_empty`,
+  // `select_all`, `clear_selection`, `selection_dialog_close_cd`)
+  String get restore => _l10n.trashRestore;
 
-  static String restoring(int count) => 'Restoring $count items..';
+  String get delete => _l10n.trashDelete;
 
-  // dialog preview
-  static const String longPressToRemove = 'Long press to remove';
+  String get empty => _l10n.trashEmpty;
 
-  // dialog buttons
-  static const String moveToTrash = 'Move to Trash';
-  static const String deletePermanently = 'Delete permanently';
-  static const String confirmed = 'Confirmed';
-  static const String cancel = 'Cancel';
+  String get selectAll => _l10n.trashSelectAll;
 
-  // untrashable warning (items that cannot go through a recoverable trash path)
-  static const String untrashableTitle = 'Some items cannot be trashed!';
-  static const String untrashableSummary = 'Such items will be deleted permanently instead.';
+  String get clearSelection => _l10n.trashClearSelection;
+
+  String get closeContentDescription => _l10n.trashSelectionCloseContentDescription;
+
+  // dialog (`dialog_to_trash`, `dialog_delete`, `dialog_from_trash`)
+  String get dialogToTrash => _l10n.trashDialogToTrash;
+
+  String get dialogDelete => _l10n.trashDialogDelete;
+
+  String get dialogFromTrash => _l10n.trashDialogFromTrash;
+
+  // dialog progress (`s_items`, `trashing_items`, `deleting_items`,
+  // `restoring_items`)
+  String items(int count) => _l10n.trashItemsCount(count);
+
+  String trashing(int count) => _l10n.trashTrashingItems(count);
+
+  String deleting(int count) => _l10n.trashDeletingItems(count);
+
+  String restoring(int count) => _l10n.trashRestoringItems(count);
+
+  // dialog preview + buttons (`long_press_to_remove`, `action_move_to_trash`,
+  // `action_delete_permanently`, `action_confirmed`, `action_cancel`)
+  String get longPressToRemove => _l10n.trashLongPressToRemove;
+
+  String get moveToTrash => _l10n.trashMoveToTrash;
+
+  String get deletePermanently => _l10n.trashDeletePermanently;
+
+  String get confirmed => _l10n.trashConfirmed;
+
+  String get cancel => _l10n.trashCancel;
+
+  // items that cannot go through the trash path (`trash_incompatible_*`)
+  String get incompatibleTitle => _l10n.trashIncompatibleTitle;
+
+  String get incompatibleSummary => _l10n.trashIncompatibleSummary;
 }
