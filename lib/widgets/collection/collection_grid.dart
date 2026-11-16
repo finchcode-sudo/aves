@@ -124,9 +124,12 @@ class _CollectionGridState extends State<CollectionGrid> {
       );
     }
 
-    return TileExtentControllerProvider(
-      controller: _tileExtentController!,
-      child: const _CollectionGridContent(),
+    return Provider<_TrashFooterMetrics>.value(
+      value: _trashFooterMetrics,
+      child: TileExtentControllerProvider(
+        controller: _tileExtentController!,
+        child: const _CollectionGridContent(),
+      ),
     );
   }
 }
@@ -141,8 +144,7 @@ class _CollectionGridContentState extends State<_CollectionGridContent> {
   final ValueNotifier<bool> _isScrollingNotifier = ValueNotifier(false);
   final ValueNotifier<AppMode> _selectingAppModeNotifier = ValueNotifier(.pickFilteredMediaInternal);
   // trash footer sliver: its height shifts every item, so hit-testing needs it
-  final GlobalKey _trashFooterKey = GlobalKey();
-  final ValueNotifier<double> _trashFooterHeightNotifier = ValueNotifier(0);
+  final _TrashFooterMetrics _trashFooterMetrics = _TrashFooterMetrics();
 
   @override
   void initState() {
@@ -155,7 +157,7 @@ class _CollectionGridContentState extends State<_CollectionGridContent> {
     _focusedItemNotifier.dispose();
     _isScrollingNotifier.dispose();
     _selectingAppModeNotifier.dispose();
-    _trashFooterHeightNotifier.dispose();
+    _trashFooterMetrics.height.dispose();
     super.dispose();
   }
 
@@ -385,7 +387,7 @@ class _CollectionSectionedContentState extends State<_CollectionSectionedContent
       items: collection.sortedEntries,
       scrollController: scrollController,
       appBarHeightNotifier: _appBarHeightNotifier,
-      aboveGridHeightNotifier: _trashFooterHeightNotifier,
+      aboveGridHeightNotifier: context.read<_TrashFooterMetrics>().height,
       child: scaler,
     );
 
@@ -590,12 +592,13 @@ class _CollectionScrollViewState extends State<_CollectionScrollView> with Widge
     if (collection.filters.contains(TrashFilter.instance)) {
       // the footer is a sliver above the list, so its height has to be fed to
       // `GridSelectionGestureDetector` for tap/long-press hit-testing to match
+      final metrics = context.read<_TrashFooterMetrics>();
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        final box = _trashFooterKey.currentContext?.findRenderObject() as RenderBox?;
+        final box = metrics.key.currentContext?.findRenderObject() as RenderBox?;
         if (box == null || !box.hasSize) return;
         final height = box.size.height;
-        if (height != _trashFooterHeightNotifier.value) {
-          _trashFooterHeightNotifier.value = height;
+        if (height != metrics.height.value) {
+          metrics.height.value = height;
         }
       });
     }
@@ -617,7 +620,7 @@ class _CollectionScrollViewState extends State<_CollectionScrollView> with Widge
         if (collection.filters.contains(TrashFilter.instance))
           SliverToBoxAdapter(
             child: KeyedSubtree(
-              key: _trashFooterKey,
+              key: context.read<_TrashFooterMetrics>().key,
               child: TrashAutoDeleteFooter(collection: collection),
             ),
           ),
@@ -791,4 +794,11 @@ class _CollectionScrollViewState extends State<_CollectionScrollView> with Widge
   }
 
   Future<bool> get _isStoragePermissionGranted => Future.wait(Permissions.storage.map((v) => v.status)).then((v) => v.any((status) => status.isGranted));
+}
+
+/// Measurement handle for the trash footer sliver, shared down the widget tree
+/// so the scroll view can measure it and the selection detector can discount it.
+class _TrashFooterMetrics {
+  final GlobalKey key = GlobalKey(debugLabel: 'trash-footer');
+  final ValueNotifier<double> height = ValueNotifier(0);
 }
