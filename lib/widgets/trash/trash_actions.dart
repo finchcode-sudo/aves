@@ -1,5 +1,6 @@
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/widgets/collection/entry_set_action_delegate.dart';
+import 'package:aves/widgets/trash/trash_action_policy.dart';
 import 'package:aves/widgets/trash/trash_controller.dart';
 import 'package:aves_model/aves_model.dart';
 import 'package:material_ui/material_ui.dart';
@@ -28,11 +29,22 @@ class TrashActions {
   }) async {
     if (entries.isEmpty) return false;
 
+    // ReFra `planRemoval`: an item blocked by a read-only provider must never be
+    // mutated. Aves is local-only, so nothing is ever blocked, but the decision
+    // goes through the same policy instead of being assumed at the call site.
+    final plan = planRemoval<AvesEntry>(
+      entries,
+      isReadOnlyCloud: (_) => false,
+      providerSupportsTrash: (_) => true,
+    );
+
     switch (action) {
       case TrashAction.delete:
+        final targets = plan.targets.toSet();
+        if (targets.isEmpty) return false;
         return _delegate.doDelete(
           context: context,
-          entries: entries,
+          entries: targets,
           enableBin: false,
           confirmed: true,
         );
