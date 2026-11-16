@@ -17,6 +17,9 @@ class GridSelectionGestureDetector<T> extends StatefulWidget {
   final List<T> items;
   final ScrollController scrollController;
   final ValueNotifier<double> appBarHeightNotifier;
+  // extra content rendered as a sliver above the sectioned list (e.g. the trash
+  // footer), which `getItemAt` must discount when mapping a tap to an item
+  final ValueNotifier<double>? aboveGridHeightNotifier;
   final Widget child;
 
   const new({
@@ -26,6 +29,7 @@ class GridSelectionGestureDetector<T> extends StatefulWidget {
     required this.items,
     required this.scrollController,
     required this.appBarHeightNotifier,
+    this.aboveGridHeightNotifier,
     required this.child,
   });
 
@@ -48,6 +52,8 @@ class _GridSelectionGestureDetectorState<T> extends State<GridSelectionGestureDe
   ScrollController get scrollController => widget.scrollController;
 
   double get appBarHeight => widget.appBarHeightNotifier.value;
+
+  double get aboveGridHeight => widget.aboveGridHeightNotifier?.value ?? 0;
 
   double get scrollableWidth {
     final scrollableContext = widget.scrollableKey.currentContext!;
@@ -205,7 +211,7 @@ class _GridSelectionGestureDetectorState<T> extends State<GridSelectionGestureDe
     // as of Flutter v1.22.5, `hitTest` on the `ScrollView` render object works fine when it is static,
     // but when it is scrolling (through controller animation), result is incomplete and children are missing,
     // so we use custom layout computation instead to find the item.
-    final offset = Offset(0, scrollController.offset - appBarHeight) + localPosition;
+    final offset = Offset(0, scrollController.offset - appBarHeight - aboveGridHeight) + localPosition;
     final sectionedListLayout = context.read<SectionedListLayout<T>>();
     return sectionedListLayout.getItemAt(context.isRtl ? Offset(scrollableWidth - offset.dx, offset.dy) : offset);
   }

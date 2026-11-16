@@ -140,6 +140,9 @@ class _CollectionGridContentState extends State<_CollectionGridContent> {
   final ValueNotifier<AvesEntry?> _focusedItemNotifier = ValueNotifier(null);
   final ValueNotifier<bool> _isScrollingNotifier = ValueNotifier(false);
   final ValueNotifier<AppMode> _selectingAppModeNotifier = ValueNotifier(.pickFilteredMediaInternal);
+  // trash footer sliver: its height shifts every item, so hit-testing needs it
+  final GlobalKey _trashFooterKey = GlobalKey();
+  final ValueNotifier<double> _trashFooterHeightNotifier = ValueNotifier(0);
 
   @override
   void initState() {
@@ -152,6 +155,7 @@ class _CollectionGridContentState extends State<_CollectionGridContent> {
     _focusedItemNotifier.dispose();
     _isScrollingNotifier.dispose();
     _selectingAppModeNotifier.dispose();
+    _trashFooterHeightNotifier.dispose();
     super.dispose();
   }
 
@@ -381,6 +385,7 @@ class _CollectionSectionedContentState extends State<_CollectionSectionedContent
       items: collection.sortedEntries,
       scrollController: scrollController,
       appBarHeightNotifier: _appBarHeightNotifier,
+      aboveGridHeightNotifier: _trashFooterHeightNotifier,
       child: scaler,
     );
 
@@ -582,6 +587,19 @@ class _CollectionScrollViewState extends State<_CollectionScrollView> with Widge
   }
 
   Widget _buildScrollView(Widget appBar, CollectionLens collection) {
+    if (collection.filters.contains(TrashFilter.instance)) {
+      // the footer is a sliver above the list, so its height has to be fed to
+      // `GridSelectionGestureDetector` for tap/long-press hit-testing to match
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final box = _trashFooterKey.currentContext?.findRenderObject() as RenderBox?;
+        if (box == null || !box.hasSize) return;
+        final height = box.size.height;
+        if (height != _trashFooterHeightNotifier.value) {
+          _trashFooterHeightNotifier.value = height;
+        }
+      });
+    }
+
     return CustomScrollView(
       key: widget.scrollableKey,
       primary: true,
@@ -598,7 +616,10 @@ class _CollectionScrollViewState extends State<_CollectionScrollView> with Widge
         appBar,
         if (collection.filters.contains(TrashFilter.instance))
           SliverToBoxAdapter(
-            child: TrashAutoDeleteFooter(collection: collection),
+            child: KeyedSubtree(
+              key: _trashFooterKey,
+              child: TrashAutoDeleteFooter(collection: collection),
+            ),
           ),
         collection.isEmpty
             ? SliverFillRemaining(
