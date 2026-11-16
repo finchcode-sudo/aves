@@ -51,7 +51,11 @@ class _CollectionPageState extends State<CollectionPage> {
   late CollectionLens _collection;
   final StreamController<DraggableScrollbarEvent> _draggableScrollBarEventStreamController = StreamController.broadcast();
 
-  bool get _isTrash => _collection.filters.contains(TrashFilter.instance);
+  // read the page's own parameters, not `_collection`: the lens is built once in
+  // `initState` and keeps whatever filters it was created with, so after coming
+  // back from the trash it would still report a `TrashFilter` and keep the
+  // bottom navigation bar hidden on the main collection page.
+  bool get _isTrash => widget.filters?.contains(TrashFilter.instance) ?? false;
 
   @override
   void initState() {
