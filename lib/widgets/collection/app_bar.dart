@@ -39,6 +39,8 @@ import 'package:aves/widgets/common/tile_extent_controller.dart';
 import 'package:aves/widgets/dialogs/aves_dialog.dart';
 import 'package:aves/widgets/dialogs/change_layout_dialog.dart';
 import 'package:aves/widgets/search/collection_search_page_route.dart';
+import 'package:aves/widgets/trash/trash_nav_actions.dart';
+import 'package:aves/widgets/trash/trash_strings.dart';
 import 'package:aves/widgets/viewer/controls/notifications.dart';
 import 'package:aves_model/aves_model.dart';
 import 'package:collection/collection.dart';
@@ -97,11 +99,6 @@ class _CollectionAppBarState extends State<CollectionAppBar> with RouteAware, Si
   CollectionSource get source => collection.source;
 
   bool get showFilterBar => collection.visibleFilters.isNotEmpty;
-
-  static const _trashSelectionQuickActions = <EntrySetAction>[
-    .delete,
-    .restore,
-  ];
 
   @override
   void initState() {
@@ -345,7 +342,7 @@ class _CollectionAppBarState extends State<CollectionAppBar> with RouteAware, Si
       if (appMode.isPickingMedia) {
         titleText = l10n.collectionPickPageTitle;
       } else if (isTrash) {
-        titleText = l10n.binPageTitle;
+        titleText = TrashStrings.pageTitle;
       } else {
         titleText = l10n.collectionPageTitle;
       }
@@ -365,6 +362,10 @@ class _CollectionAppBarState extends State<CollectionAppBar> with RouteAware, Si
 
   List<Widget> _buildActions(BuildContext context, Selection<AvesEntry> selection, double maxWidth) {
     final appMode = context.watch<ValueNotifier<AppMode>>().value;
+    if (isTrash && !settings.useTvLayout) {
+      // ReFra `TrashedNavActions`: Restore + (Delete | Empty) text buttons
+      return [TrashNavActions(collection: collection)];
+    }
     final isSelecting = selection.isSelecting;
     final selectedItemCount = selection.selectedItemCount;
 
@@ -470,8 +471,10 @@ class _CollectionAppBarState extends State<CollectionAppBar> with RouteAware, Si
     final selectedItemCount = selection.selectedItemCount;
     final hasSelection = selectedItemCount > 0;
 
-    final browsingQuickActions = settings.collectionBrowsingQuickActions;
-    final selectionQuickActions = isTrash ? _trashSelectionQuickActions : settings.collectionSelectionQuickActions;
+    final browsingQuickActions = isTrash ? const <EntrySetAction>[] : settings.collectionBrowsingQuickActions;
+    // ReFra parity: the trash screen exposes Restore/Delete through the floating
+    // selection sheet, not through the app bar
+    final selectionQuickActions = isTrash ? const <EntrySetAction>[] : settings.collectionSelectionQuickActions;
     final quickActions = (isSelecting ? selectionQuickActions : browsingQuickActions).take(max(0, availableCount - 1)).toList();
     final quickActionButtons = quickActions
         .where(isVisible)

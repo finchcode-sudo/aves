@@ -8,6 +8,7 @@ import 'package:aves/model/favourites.dart';
 import 'package:aves/model/filters/favourite.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/filters/mime.dart';
+import 'package:aves/model/filters/trash.dart';
 import 'package:aves/model/selection.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/collection_lens.dart';
@@ -43,6 +44,8 @@ import 'package:aves/widgets/common/identity/empty.dart';
 import 'package:aves/widgets/common/identity/scroll_thumb.dart';
 import 'package:aves/widgets/common/providers/tile_extent_controller_provider.dart';
 import 'package:aves/widgets/common/providers/viewer_entry_provider.dart';
+import 'package:aves/widgets/trash/trash_auto_delete_footer.dart';
+import 'package:aves/widgets/trash/trash_empty_state.dart';
 import 'package:aves/widgets/common/thumbnail/decorated.dart';
 import 'package:aves/widgets/common/thumbnail/image.dart';
 import 'package:aves/widgets/common/thumbnail/notifications.dart';
@@ -593,6 +596,10 @@ class _CollectionScrollViewState extends State<_CollectionScrollView> with Widge
       scrollCacheExtent: ScrollCacheExtent.pixels(context.select<TileExtentController, double>((controller) => controller.effectiveExtentMax)),
       slivers: [
         appBar,
+        if (collection.filters.contains(TrashFilter.instance))
+          SliverToBoxAdapter(
+            child: TrashAutoDeleteFooter(collection: collection),
+          ),
         collection.isEmpty
             ? SliverFillRemaining(
                 hasScrollBody: false,
@@ -606,6 +613,10 @@ class _CollectionScrollViewState extends State<_CollectionScrollView> with Widge
   }
 
   Widget _buildEmptyContent(CollectionLens collection) {
+    if (collection.filters.any((filter) => filter is TrashFilter)) {
+      // ReFra `EmptyTrash`
+      return const TrashEmptyState();
+    }
     final source = collection.source;
     return ValueListenableBuilder<SourceState>(
       valueListenable: source.stateNotifier,

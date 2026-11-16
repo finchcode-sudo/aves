@@ -25,6 +25,8 @@ import 'package:aves/widgets/common/identity/aves_fab.dart';
 import 'package:aves/widgets/common/providers/query_provider.dart';
 import 'package:aves/widgets/common/providers/selection_provider.dart';
 import 'package:aves/widgets/navigation/drawer/app_drawer.dart';
+import 'package:aves/widgets/trash/trash_controller.dart';
+import 'package:aves/widgets/trash/trash_overlay.dart';
 import 'package:aves/widgets/navigation/nav_bar/nav_bar.dart';
 import 'package:aves/widgets/navigation/tv_rail.dart';
 import 'package:aves_model/aves_model.dart';
@@ -48,6 +50,8 @@ class _CollectionPageState extends State<CollectionPage> {
   final Set<StreamSubscription> _subscriptions = {};
   late CollectionLens _collection;
   final StreamController<DraggableScrollbarEvent> _draggableScrollBarEventStreamController = StreamController.broadcast();
+
+  bool get _isTrash => _collection.filters.contains(TrashFilter.instance);
 
   @override
   void initState() {
@@ -160,6 +164,20 @@ class _CollectionPageState extends State<CollectionPage> {
                   ),
                 );
               },
+            );
+          }
+          if (_isTrash) {
+            // ReFra parity: the trash screen owns a floating selection sheet and a
+            // confirmation bottom sheet. Both are hosted above the scaffold so the
+            // scrim dims the app bar too.
+            page = ChangeNotifierProvider<TrashController>(
+              create: (context) => TrashController(),
+              child: Stack(
+                children: [
+                  Positioned.fill(child: page),
+                  Positioned.fill(child: TrashOverlay(collection: _collection)),
+                ],
+              ),
             );
           }
           // this provider should be above `TvRail`

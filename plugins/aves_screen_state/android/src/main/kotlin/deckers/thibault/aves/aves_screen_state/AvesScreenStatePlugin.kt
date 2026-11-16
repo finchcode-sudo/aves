@@ -1,4 +1,4 @@
-package deckers.thibault.aves.aves_screen_state
+package com.aves.refra.aves_screen_state
 
 import android.content.Context
 import android.content.Intent
